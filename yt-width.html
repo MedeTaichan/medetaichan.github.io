@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube動画サイズチェッカー</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 10px;
+    }
+
+    iframe {
+      display: block;
+      margin-top: 20px;
+      border: none;
+      max-width: 100%;
+    }
+
+    .info {
+      margin-top: 10px;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube動画サイズチェッカー</h1>
+  <input type="text" id="urlInput" placeholder="YouTubeのURLを貼ってください">
+  <button onclick="loadVideo()">読み込む</button>
+
+  <div id="videoContainer"></div>
+  <div class="info" id="sizeInfo"></div>
+
+  <script>
+    function extractVideoId(url) {
+      const match = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : null;
+    }
+
+    function loadVideo() {
+      const url = document.getElementById('urlInput').value;
+      const videoId = extractVideoId(url);
+      const container = document.getElementById('videoContainer');
+      const info = document.getElementById('sizeInfo');
+
+      if (!videoId) {
+        container.innerHTML = "<p>正しいYouTubeリンクを入力してください。</p>";
+        info.innerHTML = "";
+        return;
+      }
+
+      container.innerHTML = `
+        <iframe id="videoFrame" width="640" height="360"
+          src="https://www.youtube.com/embed/${videoId}"
+          allowfullscreen></iframe>
+      `;
+
+      setTimeout(() => {
+        const iframe = document.getElementById('videoFrame');
+        const width = iframe.clientWidth;
+        const height = iframe.clientHeight;
+        const ratio = (width / height).toFixed(2);
+
+        let aspect = "不明";
+        if (Math.abs(ratio - 16 / 9) < 0.01) aspect = "16:9";
+        else if (Math.abs(ratio - 4 / 3) < 0.01) aspect = "4:3";
+        else aspect = `${width}:${height}`;
+
+        info.innerHTML = `
+          横幅: ${width}px<br>
+          縦幅: ${height}px<br>
+          縦横比: ${aspect}（${ratio}）
+        `;
+      }, 500); // 少し待ってから取得
+    }
+  </script>
+</body>
+</html>
